@@ -106,9 +106,25 @@ struct LoginView: View {
         isLoading = true
         errorMessage = nil
         
+        // 1. Очищаем введенный номер от плюсов, пробелов, скобок и тире
+        let cleanPhone = phone
+            .replacingOccurrences(of: "+", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+        
+        // Если пользователь ввел просто "093...", автоматически подставляем "38"
+        var finalPhone = cleanPhone
+        if finalPhone.hasPrefix("0") && finalPhone.count == 10 {
+            finalPhone = "38" + finalPhone
+        }
+        
+        print("Отправляем на сервер телефон: \(finalPhone)")
+        
         do {
-            // Вызываем метод авторизации из нашего обновленного NetworkManager
-            if let cookie = try await NetworkManager.shared.login(phone: phone, password: password) {
+            // 2. Отправляем очищенный номер (finalPhone) вместо сырого (phone)
+            if let cookie = try await NetworkManager.shared.login(phone: finalPhone, password: password) {
                 // Очищаем куки от лишних пробелов, если они есть
                 let cleanCookie = cookie.trimmingCharacters(in: .whitespaces)
                 
